@@ -1,50 +1,69 @@
-import React, { Component } from "react"
-import logo from "./logo.svg"
-import "./App.css"
+import './App.css';
+import { getPahlawanList, searchPahlawan } from "./api"
+import { useEffect, useState } from 'react'
 
-class LambdaDemo extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { loading: false, msg: null }
+const App = () => {
+  const [heroes, setHeroes] = useState([])
+
+  useEffect(() => {
+    getPahlawanList().then((results) => {
+      setHeroes(results)
+    })
+  }, [])
+
+  const HeroesList = () => {
+    return heroes.map((pahlawan, i) => {
+      return (
+        <div className='wrapper' key={i}>
+          <div className='nama'>{pahlawan.name}</div>
+          <div className='lahir'>Tahun Lahir : {pahlawan.birth_year}</div>
+          <div className='wafat'>Tahun Wafat : {pahlawan.death_year}</div>
+          <div className='semat'>Tahun Penyematan : {pahlawan.ascension_year}</div>
+          <div className='deskripsi'>{pahlawan.description}</div>
+        </div>
+      )
+    })
   }
 
-  handleClick = api => e => {
-    e.preventDefault()
-
-    this.setState({ loading: true })
-    fetch("/.netlify/functions/" + api)
-      .then(response => response.json())
-      .then(json => this.setState({ loading: false, msg: json.msg }))
+  const cari = async (q) => {
+    const que = await searchPahlawan(q)
+    setHeroes(que)
   }
 
-  render() {
-    const { loading, msg } = this.state
-
-    return (
-      <p>
-        <button onClick={this.handleClick("hello")}>{loading ? "Loading..." : "Call Lambda"}</button>
-        <button onClick={this.handleClick("async-dadjoke")}>{loading ? "Loading..." : "Call Async Lambda"}</button>
-        <br />
-        <span>{msg}</span>
-      </p>
-    )
-  }
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>PAHLAWAN NASIONAL INDONESIA</h1>
+        <p className='h3'>Pahlawan Nasional yaitu gelar yang diberikan kepada Warga Negara Indonesia atau seseorang yang berjuang melawan penjajahan di wilayah yang sekarang menjadi wilayah Indonesia yang gugur atau berpulang demi membela bangsa dan negara, atau yang semasa hidupnya memainkan aksi kepahlawanan atau menghasilkan prestasi dan karya yang luar biasa untuk pembangunan dan kemajuan bangsa dan negara Indonesia.</p>
+        <p className='h3'>Gelar Pahlawan Nasional ditentukan oleh presiden. Sejak dilakukan pemberian gelar ini pada tahun 1959, nomenklaturnya tidak tetap. Untuk menyelaraskannya, maka dalam Undang-Undang Nomor 20 Tahun 2009 dituturkan bahwa gelar Pahlawan Nasional mencakup semua jenis gelar yang pernah diberikan sebelumnya, yaitu:</p>
+        <p className='h3 p'>- Pahlawan Perintis Kemerdekaan</p>
+        <p className='h3 p'>- Pahlawan Kemerdekaan Nasional</p>
+        <p className='h3 p'>- Pahlawan Proklamator</p>
+        <p className='h3 p'>- Pahlawan Kebangkitan Nasional</p>
+        <p className='h3 p'>- Pahlawan Revolusi</p>
+        <p className='h3 p'>- Pahlawan Ampera</p>
+        <br></br>
+        <input
+          placeholder='Cari Pahlawan ...'
+          className='search'
+          list='data'
+          onChange={({ target }) => cari(target.value)}
+        />
+        <datalist id='data'>
+          {
+            heroes.map(results =>{
+              return(
+              <option>{results.name}</option>
+              )
+            })
+          }
+        </datalist>
+        <div className='container'>
+          <HeroesList />
+        </div>
+      </header>
+    </div>
+  )
 }
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <LambdaDemo />
-        </header>
-      </div>
-    )
-  }
-}
-
-export default App
+export default App;
